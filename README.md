@@ -26,60 +26,130 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
-## Project setup
 
-```bash
-$ npm install
-```
+# API Florista - Instrucciones de Configuración y uso
 
-## Compile and run the project
+Este proyecto es una API diseñada para la gestión de un catálogo de productos y la administración de pedidos en un vivero o tienda de flores. La API está construida con **NestJS** y utiliza **MongoDB** como base de datos.
 
-```bash
-# development
-$ npm run start
+## Requisitos Previos
 
-# watch mode
-$ npm run start:dev
+Antes de comenzar, asegúrate de cumplir con los siguientes requisitos en tu entorno de trabajo:
 
-# production mode
-$ npm run start:prod
-```
+1. **Node.js**: Versión `18.16.0` o superior.
+   - [Descargar Node.js](https://nodejs.org/)
 
-## Run tests
+2. **npm**: Instalado junto con Node.js.
+   - Puedes verificar la instalación con los siguientes comandos:
+     ```bash
+     node -v
+     npm -v
+     ```
 
-```bash
-# unit tests
-$ npm run test
+3. **MongoDB**: Base de datos NoSQL. Puedes instalar MongoDB localmente o utilizar **MongoDB Atlas** (una versión de MongoDB en la nube).
+   - [Instalar MongoDB local](https://docs.mongodb.com/manual/installation/)
+   - [Registro en MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
 
-# e2e tests
-$ npm run test:e2e
+---
 
-# test coverage
-$ npm run test:cov
-```
+## Instrucciones para levantar el proyecto
 
-## Resources
+### Paso 1: Clonar el repositorio
 
-Check out a few resources that may come in handy when working with NestJS:
+Clona el repositorio del proyecto en tu máquina local.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
 
-## Support
+git clone https://github.com/usuario/shop-pay-api.git
+cd api-florista
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
 
-## Stay in touch
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### Paso 2: Instalar dependencias
 
-## License
+Antes de ejecutar el proyecto, es necesario instalar todas las dependencias. Esto se hace con el siguiente comando:
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+
+npm install
+
+
+Este comando leerá el archivo package.json e instalará todas las dependencias necesarias para que el proyecto funcione correctamente.
+
+## Paso 3: Configuración del archivo .env
+
+
+El proyecto utiliza un archivo de variables de entorno llamado .env. Este archivo contiene configuraciones sensibles como la conexión a la base de datos y el puerto del servidor, entre otros.
+
+Crea un archivo llamado .env en la raíz del proyecto.
+Copia y pega el siguiente contenido en el archivo .env:
+
+# Configuración del puerto de la aplicación
+PORT=3000
+
+# Conexión a la base de datos MongoDB
+MONGODB_URI= mongodb://localhost:27017/shop-pay-db
+
+# Otras configuraciones
+NODE_ENV=development
+
+
+# Puerto en el que la API estará disponible
+PORT=3000
+
+# URI de conexión a MongoDB (local o MongoDB Atlas)
+MONGODB_URI=mongodb://localhost:27017/shop-pay-db
+
+# Entorno de ejecución
+NODE_ENV=development
+
+
+Explicación de las variables:
+PORT: Define el puerto en el que la API será accesible. En este ejemplo, la API estará disponible en http://localhost:3000.
+MONGODB_URI: Es la URI de conexión a tu base de datos MongoDB. Si estás usando MongoDB localmente, mantén el valor mongodb://localhost:27017/shop-pay-db. Si utilizas MongoDB Atlas, cambia este valor con la URI proporcionada por MongoDB Atlas.
+NODE_ENV: Define el entorno de ejecución de la aplicación (development para desarrollo, production para producción).
+
+###  Paso 4: Levantar la base de datos MongoDB
+
+Para MongoDB Local:
+Asegúrate de tener MongoDB instalado en tu sistema.
+Ejecuta el servicio de MongoDB en tu máquina: mongod
+Esto ejecutará MongoDB en el puerto 27017 de tu máquina local.
+
+
+Para MongoDB Atlas:
+Regístrate en MongoDB Atlas.
+Crea un clúster de base de datos.
+Obtén la URI de conexión de tu clúster y reemplaza el valor de MONGODB_URI en tu archivo .env con esa URI.
+Ejemplo de una URI de MongoDB Atlas:
+
+plaintext
+Copiar código
+MONGODB_URI=mongodb+srv://<usuario>:<password>@cluster.mongodb.net/floristaDB?retryWrites=true&w=majority
+Reemplaza <usuario> y <password> con tus credenciales.
+
+
+###  Paso 5: Ejecutar la aplicación
+
+
+Con la base de datos funcionando y el archivo .env correctamente configurado, puedes ejecutar el proyecto. Existen varios modos de ejecución:
+
+1. Modo Desarrollo (recomendado para desarrollo):
+Este modo recarga automáticamente el servidor cada vez que detecta cambios en el código. Para ejecutar en este modo, usa el siguiente comando:
+
+
+npm run start:dev
+El proyecto estará disponible en http://localhost:3000.
+
+2. Modo Producción (para despliegue en producción):
+Para ejecutar la aplicación en modo producción, primero debes compilarla y luego ejecutarla:
+
+
+npm run build
+npm run start:prod
+En este modo, se usa la versión optimizada para producción.
+
+3. Otros modos de ejecución:
+Ejecutar en modo observador (watch mode):
+npm run start:dev
+
+Ejecutar en modo depuración (debug mode):
+npm run start:debug
+

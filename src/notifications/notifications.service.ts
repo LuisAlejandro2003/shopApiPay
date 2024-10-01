@@ -28,8 +28,8 @@ export class NotificationsService {
         phoneNumber: details.phoneNumber,
         message: details.message,
         status: 'Sent',
-        sid: response.sid,  // Almacenar el SID de Twilio
-        dateSent: response.dateCreated,  // Fecha de creación del mensaje
+        sid: response.sid, 
+        dateSent: response.dateCreated, 
       });
 
       return await newNotification.save();
