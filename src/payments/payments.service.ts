@@ -1,26 +1,83 @@
 import { Injectable } from '@nestjs/common';
+import * as paypal from '@paypal/checkout-server-sdk';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Payment } from './entities/payment.entity';
 import { CreatePaymentDto } from './dto/create-payment.dto';
-import { UpdatePaymentDto } from './dto/update-payment.dto';
 
 @Injectable()
 export class PaymentsService {
-  create(createPaymentDto: CreatePaymentDto) {
-    return 'This action adds a new payment';
+  private paypalClient: paypal.core.PayPalHttpClient;
+
+  constructor(@InjectModel(Payment.name) private paymentModel: Model<Payment>) {
+    const environment = new paypal.core.SandboxEnvironment(
+      process.env.PAYPAL_CLIENT_ID,
+      process.env.PAYPAL_CLIENT_SECRET,
+    );
+    this.paypalClient = new paypal.core.PayPalHttpClient(environment);
   }
 
-  findAll() {
-    return `This action returns all payments`;
+
+  async create(createPaymentDto: CreatePaymentDto): Promise<any> {
+    const request = new paypal.orders.OrdersCreateRequest();
+    request.requestBody({
+      intent: 'CAPTURE',
+      purchase_units: [{
+        amount: {
+          currency_code: 'USD',
+          value: (createPaymentDto.price * createPaymentDto.quantity).toFixed(2), // Total del pago basado en la cantidad y el precio
+        },
+      }],
+      application_context: {
+        return_url: createPaymentDto.successUrl,  // URL de éxito
+        cancel_url: createPaymentDto.failureUrl,  // URL de cancelación
+      },
+    });
+  
+    const order = await this.paypalClient.execute(request);
+  
+    const newPayment = new this.paymentModel({
+      title: createPaymentDto.title,
+      quantity: createPaymentDto.quantity,
+      price: createPaymentDto.price,
+      status: 'Pending',
+      externalReference: order.result.id,
+    });
+    await newPayment.save();
+  
+    return order.result;
+  }
+  
+
+
+  async capturePayment(orderId: string): Promise<any> {
+    const request = new paypal.orders.OrdersCaptureRequest(orderId);
+    request.requestBody({});
+    try {
+      const capture = await this.paypalClient.execute(request);
+      return capture.result;
+    } catch (error) {
+      throw new Error(`Error al capturar el pago: ${error.message}`);
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} payment`;
+
+  async findAll(queryParams: any): Promise<any> {
+    return await this.paymentModel.find(queryParams).exec();
   }
 
-  update(id: number, updatePaymentDto: UpdatePaymentDto) {
-    return `This action updates a #${id} payment`;
+
+  async findById(id: string): Promise<any> {
+    return await this.paymentModel.findById(id).exec();
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} payment`;
+
+  async update(id: string, updateData: any): Promise<any> {
+    return await this.paymentModel.findByIdAndUpdate(id, updateData, { new: true }).exec();
+  }
+
+
+  async delete(id: string): Promise<any> {
+    return await this.paymentModel.findByIdAndDelete(id).exec();
   }
 }
