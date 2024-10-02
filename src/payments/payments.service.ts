@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import * as paypal from '@paypal/checkout-server-sdk';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -17,7 +17,6 @@ export class PaymentsService {
     this.paypalClient = new paypal.core.PayPalHttpClient(environment);
   }
 
-
   async create(createPaymentDto: CreatePaymentDto): Promise<any> {
     const request = new paypal.orders.OrdersCreateRequest();
     request.requestBody({
@@ -25,7 +24,7 @@ export class PaymentsService {
       purchase_units: [{
         amount: {
           currency_code: 'USD',
-          value: (createPaymentDto.price * createPaymentDto.quantity).toFixed(2), // Total del pago basado en la cantidad y el precio
+          value: (createPaymentDto.price * createPaymentDto.quantity).toFixed(2), // Total del pago
         },
       }],
       application_context: {
@@ -33,51 +32,65 @@ export class PaymentsService {
         cancel_url: createPaymentDto.failureUrl,  // URL de cancelación
       },
     });
-  
-    const order = await this.paypalClient.execute(request);
-  
-    const newPayment = new this.paymentModel({
-      title: createPaymentDto.title,
-      quantity: createPaymentDto.quantity,
-      price: createPaymentDto.price,
-      status: 'Pending',
-      externalReference: order.result.id,
-    });
-    await newPayment.save();
-  
-    return order.result;
-  }
-  
 
+    try {
+      const order = await this.paypalClient.execute(request);
+      const newPayment = new this.paymentModel({
+        title: createPaymentDto.title,
+        quantity: createPaymentDto.quantity,
+        price: createPaymentDto.price,
+        status: 'Pending',
+        externalReference: order.result.id,
+      });
+      await newPayment.save();
+
+      return order.result;
+    } catch (error) {
+      throw new InternalServerErrorException(`Error al crear el pago: ${error.message}`);
+    }
+  }
 
   async capturePayment(orderId: string): Promise<any> {
     const request = new paypal.orders.OrdersCaptureRequest(orderId);
     request.requestBody({});
+
     try {
       const capture = await this.paypalClient.execute(request);
       return capture.result;
     } catch (error) {
-      throw new Error(`Error al capturar el pago: ${error.message}`);
+      throw new InternalServerErrorException(`Error al capturar el pago: ${error.message}`);
     }
   }
 
-
   async findAll(queryParams: any): Promise<any> {
-    return await this.paymentModel.find(queryParams).exec();
+    try {
+      return await this.paymentModel.find(queryParams).exec();
+    } catch (error) {
+      throw new InternalServerErrorException(`Error al recuperar los pagos: ${error.message}`);
+    }
   }
-
 
   async findById(id: string): Promise<any> {
-    return await this.paymentModel.findById(id).exec();
+    const payment = await this.paymentModel.findById(id).exec();
+    if (!payment) {
+      throw new NotFoundException(`Payment with ID ${id} not found`);
+    }
+    return payment;
   }
-
 
   async update(id: string, updateData: any): Promise<any> {
-    return await this.paymentModel.findByIdAndUpdate(id, updateData, { new: true }).exec();
+    const updatedPayment = await this.paymentModel.findByIdAndUpdate(id, updateData, { new: true }).exec();
+    if (!updatedPayment) {
+      throw new NotFoundException(`Payment with ID ${id} not found`);
+    }
+    return updatedPayment;
   }
 
-
   async delete(id: string): Promise<any> {
-    return await this.paymentModel.findByIdAndDelete(id).exec();
+    const deletedPayment = await this.paymentModel.findByIdAndDelete(id).exec();
+    if (!deletedPayment) {
+      throw new NotFoundException(`Payment with ID ${id} not found`);
+    }
+    return deletedPayment;
   }
 }

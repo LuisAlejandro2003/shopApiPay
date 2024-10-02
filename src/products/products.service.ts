@@ -18,7 +18,7 @@ export class ProductsService {
 
   async findOne(id: string): Promise<Product> {
     const product = await this.productModel.findById(id).exec();
-    if (!product) throw new NotFoundException('Product not found');
+    if (!product) throw new NotFoundException(`Product with ID ${id} not found`);
     return product;
   }
 
@@ -28,14 +28,19 @@ export class ProductsService {
   }
 
   async update(id: string, updateProductDto: UpdateProductDto): Promise<Product> {
-    const existingProduct = await this.productModel.findByIdAndUpdate(id, updateProductDto, { new: true });
-    if (!existingProduct) throw new NotFoundException('Product not found');
-    return existingProduct;
+    const updatedProduct = await this.productModel.findByIdAndUpdate(id, updateProductDto, { new: true }).exec();
+    if (!updatedProduct) {
+      throw new NotFoundException(`Product with ID ${id} not found`);
+    }
+    return updatedProduct;
   }
 
-  async remove(id: string): Promise<void> {
-    const result = await this.productModel.findByIdAndDelete(id).exec();
-    if (!result) throw new NotFoundException('Product not found');
+  async remove(id: string): Promise<Product> {
+    const deletedProduct = await this.productModel.findByIdAndDelete(id).exec();
+    if (!deletedProduct) {
+      throw new NotFoundException(`Product with ID ${id} not found`);
+    }
+    return deletedProduct;
   }
 
   async findByBrand(brand: string): Promise<Product[]> {

@@ -58,7 +58,7 @@ Antes de comenzar, asegúrate de cumplir con los siguientes requisitos en tu ent
 Clona el repositorio del proyecto en tu máquina local.
 
 
-git clone https://github.com/usuario/shop-pay-api.git
+git clone https://github.com/LuisAlejandro2003/shopApiPay.git
 cd api-florista
 
 
@@ -85,20 +85,12 @@ Copia y pega el siguiente contenido en el archivo .env:
 PORT=3000
 
 # Conexión a la base de datos MongoDB
-MONGODB_URI= mongodb://localhost:27017/shop-pay-db
-
-# Otras configuraciones
-NODE_ENV=development
+MONGODB_URI=mongodb://localhost:27017/shop-pay-db
 
 
 # Puerto en el que la API estará disponible
 PORT=3000
 
-# URI de conexión a MongoDB (local o MongoDB Atlas)
-MONGODB_URI=mongodb://localhost:27017/shop-pay-db
-
-# Entorno de ejecución
-NODE_ENV=development
 
 
 Explicación de las variables:

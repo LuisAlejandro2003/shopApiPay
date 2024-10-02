@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Notification } from './entities/notification.entity';
@@ -16,7 +16,6 @@ export class NotificationsService {
     this.client = Twilio(accountSid, authToken);
   }
 
- 
   async sendWhatsAppNotification(details: CreateNotificationDto) {
     try {
       const response = await this.client.messages.create({
@@ -43,27 +42,39 @@ export class NotificationsService {
       });
 
       await failedNotification.save();
-      throw new Error(`WhatsApp notification failed: ${error.message}`);
+      throw new InternalServerErrorException(`WhatsApp notification failed: ${error.message}`);
     }
   }
 
-  // Obtener todas las notificaciones
   async getAllNotifications() {
-    return await this.notificationModel.find().exec();
+    try {
+      return await this.notificationModel.find().exec();
+    } catch (error) {
+      throw new InternalServerErrorException(`Error retrieving notifications: ${error.message}`);
+    }
   }
 
-  // Obtener una notificación por ID
   async getNotificationById(id: string) {
-    return await this.notificationModel.findById(id).exec();
+    const notification = await this.notificationModel.findById(id).exec();
+    if (!notification) {
+      throw new NotFoundException(`Notification with ID ${id} not found`);
+    }
+    return notification;
   }
 
-  // Actualizar una notificación
   async updateNotification(id: string, updateNotificationDto: UpdateNotificationDto) {
-    return await this.notificationModel.findByIdAndUpdate(id, updateNotificationDto, { new: true }).exec();
+    const updatedNotification = await this.notificationModel.findByIdAndUpdate(id, updateNotificationDto, { new: true }).exec();
+    if (!updatedNotification) {
+      throw new NotFoundException(`Notification with ID ${id} not found`);
+    }
+    return updatedNotification;
   }
 
-  // Eliminar una notificación
   async deleteNotification(id: string) {
-    return await this.notificationModel.findByIdAndDelete(id).exec();
+    const deletedNotification = await this.notificationModel.findByIdAndDelete(id).exec();
+    if (!deletedNotification) {
+      throw new NotFoundException(`Notification with ID ${id} not found`);
+    }
+    return deletedNotification;
   }
 }
