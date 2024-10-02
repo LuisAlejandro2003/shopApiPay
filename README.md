@@ -27,7 +27,7 @@
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
 
-# API Florista - Instrucciones de Configuración y uso
+# shopPayApi - Instrucciones de Configuración y uso
 
 Este proyecto es una API diseñada para la gestión de un catálogo de productos y la administración de pedidos en un vivero o tienda de flores. La API está construida con **NestJS** y utiliza **MongoDB** como base de datos.
 
