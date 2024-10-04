@@ -50,7 +50,8 @@ export class PaymentsController {
       return {
         statusCode: HttpStatus.OK,
         message: 'Payments retrieved successfully',
-        data: payments,
+        data: payments.data,
+        meta: payments.meta,
       };
     } catch (error) {
       throw new InternalServerErrorException({

@@ -46,14 +46,31 @@ export class NotificationsService {
     }
   }
 
-  async getAllNotifications() {
+  async getAllNotifications(queryParams: any): Promise<any> {
+    const { page = 1, limit = 10, ...filters } = queryParams;  // Extracción de los parámetros de paginación y los filtros
+    const skip = (page - 1) * limit;
+  
     try {
-      return await this.notificationModel.find().exec();
+      const [notifications, totalItems] = await Promise.all([
+        this.notificationModel.find(filters).skip(skip).limit(Number(limit)).exec(),
+        this.notificationModel.countDocuments(filters).exec(),
+      ]);
+  
+      return {
+        data: notifications,
+        meta: {
+          totalItems,
+          itemCount: notifications.length,
+          itemsPerPage: limit,
+          totalPages: Math.ceil(totalItems / limit),
+          currentPage: page,
+        },
+      };
     } catch (error) {
       throw new InternalServerErrorException(`Error retrieving notifications: ${error.message}`);
     }
   }
-
+  
   async getNotificationById(id: string) {
     const notification = await this.notificationModel.findById(id).exec();
     if (!notification) {

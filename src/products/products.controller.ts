@@ -9,13 +9,24 @@ export class ProductsController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  async findAll(@Query() query) {
+  async findAll(
+    @Query('page') page: number = 1,        // Parámetro de página, por defecto es la página 1
+    @Query('limit') limit: number = 10,     // Parámetro de límite, por defecto es 10 resultados por página
+    @Query() query
+  ) {
     try {
-      const products = await this.productsService.findAll(query);
+      const products = await this.productsService.findAll(query, page, limit);
       return {
         statusCode: HttpStatus.OK,
         message: 'Products retrieved successfully',
-        data: products,
+        data: products.data,
+        meta: {                              // Meta información para paginación
+          totalItems: products.totalItems,
+          itemCount: products.itemCount,
+          itemsPerPage: limit,
+          totalPages: products.totalPages,
+          currentPage: page,
+        },
       };
     } catch (error) {
       throw new InternalServerErrorException({

@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Param, Delete, Patch, HttpCode, HttpStatus, NotFoundException, InternalServerErrorException } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Delete, Patch, HttpCode, HttpStatus, NotFoundException, InternalServerErrorException, Query } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { UpdateNotificationDto } from './dto/update-notification.dto';
@@ -27,13 +27,14 @@ export class NotificationsController {
 
   @Get()
   @HttpCode(HttpStatus.OK) // 200 OK
-  async getAllNotifications() {
+  async getAllNotifications(@Query() queryParams: any) {
     try {
-      const notifications = await this.notificationsService.getAllNotifications();
+      const notifications = await this.notificationsService.getAllNotifications(queryParams);
       return {
         statusCode: HttpStatus.OK,
         message: 'Notifications retrieved successfully',
-        data: notifications,
+        data: notifications.data,
+        meta: notifications.meta,  // Meta información de paginación
       };
     } catch (error) {
       throw new InternalServerErrorException({
@@ -42,6 +43,7 @@ export class NotificationsController {
       });
     }
   }
+  
 
   @Get(':id')
   @HttpCode(HttpStatus.OK) // 200 OK

@@ -9,12 +9,31 @@ import { UpdateProductDto } from './dto/update-product.dto';
 export class ProductsService {
   constructor(@InjectModel(Product.name) private productModel: Model<Product>) {}
 
-  async findAll(query): Promise<Product[]> {
+  async findAll(query: any, page: number, limit: number): Promise<any> {
+    const skip = (page - 1) * limit;  // Calcular cuántos documentos saltar según la página
+
     const filters = {};
     if (query.brand) filters['brand'] = query.brand;
     if (query.category) filters['category'] = query.category;
-    return this.productModel.find(filters).exec();
+
+    const [totalItems, data] = await Promise.all([
+      this.productModel.countDocuments(filters),  // Contar el total de productos con esos filtros
+      this.productModel.find(filters)             // Obtener los productos con paginación
+        .skip(skip)
+        .limit(limit)
+        .exec(),
+    ]);
+
+    return {
+      totalItems,
+      itemCount: data.length,
+      totalPages: Math.ceil(totalItems / limit),
+      data,
+    };
   }
+
+
+
 
   async findOne(id: string): Promise<Product> {
     const product = await this.productModel.findById(id).exec();

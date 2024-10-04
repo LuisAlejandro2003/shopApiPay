@@ -63,10 +63,27 @@ export class PaymentsService {
   }
 
   async findAll(queryParams: any): Promise<any> {
+    const { page = 1, limit = 10, ...filters } = queryParams;
+    const skip = (page - 1) * limit;
+
     try {
-      return await this.paymentModel.find(queryParams).exec();
+      const [payments, totalItems] = await Promise.all([
+        this.paymentModel.find(filters).skip(skip).limit(Number(limit)).exec(),
+        this.paymentModel.countDocuments(filters).exec(),
+      ]);
+
+      return {
+        data: payments,
+        meta: {
+          totalItems,
+          itemCount: payments.length,
+          itemsPerPage: limit,
+          totalPages: Math.ceil(totalItems / limit),
+          currentPage: page,
+        },
+      };
     } catch (error) {
-      throw new InternalServerErrorException(`Error al recuperar los pagos: ${error.message}`);
+      throw new InternalServerErrorException(`Error  ${error.message}`);
     }
   }
 
